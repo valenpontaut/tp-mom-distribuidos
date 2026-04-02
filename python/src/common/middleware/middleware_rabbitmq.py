@@ -12,13 +12,30 @@ class MessageMiddlewareQueueRabbitMQ(MessageMiddlewareQueue):
         self.queue_name = queue_name
 
     def start_consuming(self, on_message_callback):
-        pass
+      def on_message(channel, method, properties, body):
+          def ack():
+              channel.basic_ack(method.delivery_tag)
+          def nack():
+              channel.basic_nack(method.delivery_tag)
+          on_message_callback(body, ack, nack)
+
+      self.channel.basic_consume(
+          queue=self.queue_name,
+          on_message_callback=on_message,
+          auto_ack=False
+      )
+
+      self.channel.start_consuming()
 
     def stop_consuming(self):
-        pass
-
+        self.channel.stop_consuming()
+    
     def send(self, message):
-        pass
+      self.channel.basic_publish(
+          exchange='',
+          routing_key=self.queue_name,
+          body=message
+      )
 
     def close(self):
         self.connection.close()
