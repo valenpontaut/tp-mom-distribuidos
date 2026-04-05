@@ -74,9 +74,8 @@ class MessageMiddlewareExchangeRabbitMQ(MessageMiddlewareExchange):
         self.channel.stop_consuming()
 
     
-    def send(self, message, routing_keys=None):
-        keys = routing_keys if routing_keys is not None else self.routing_keys
-        for key in keys:
+    def send(self, message):
+        for key in self.routing_keys:
             self.channel.basic_publish(
                 exchange=self.exchange_name,
                 routing_key=key,
